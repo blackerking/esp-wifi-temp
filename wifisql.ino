@@ -1,6 +1,8 @@
 /*
-    This sketch establishes a TCP connection to a "quote of the day" service.
-    It sends a "hello" message, and then prints received data.
+    This Application for an ESP8266 WiFi MicroController uses a DHT22 Sensor to get temperatur and humidity.
+    After this it stores this information inside a mysql database via WiFi connection.
+
+    This code is a kind of merge of different sketches.
 */
 
 #include <ESP8266WiFi.h>
@@ -8,18 +10,22 @@
 #include <MySQL_Cursor.h>
 #include "DHT.h"
 
-#define DHTPIN D2            // Digital pin connected to the DHT sensor 
-#define DHTTYPE    DHT22     // DHT 22 
-#define STASSID "SSID"
-#define STAPSK  "PASSWORD"
-const char* ssid     = STASSID;
+#define DHTPIN      D2              // Digital pin connected to the DHT sensor 
+#define DHTTYPE     DHT22           // DHT 22 
+#define STASSID     "SSID"          // SSID of your WLAN
+#define STAPSK      "PASSWORD"      // Password of your WLAN
+#define SQLUSER     "ROOT"
+#define SQLPASS     "SQLPASS"
+#define BAUDRATE    9600
+
+const char* ssid         = STASSID;
 const char* wlanpassword = STAPSK;
 DHT dht(DHTPIN, DHTTYPE);
 
-IPAddress server_addr(0,0,0,0);  // IP of the MySQL *server* here
-char user[] = "ROOT";              // MySQL user login username
-char password[] = "SQLPASSWORD";        // MySQL user login password
-char USE_DB_SQL[] = "USE DATABASE;";
+IPAddress server_addr(0,0,0,0);     // IP of the MySQL *server* here ; uses comata as points!
+char user[]         = SQLUSER;      // MySQL user login username
+char password[]     = SQLPASS;      // MySQL user login password
+char USE_DB_SQL[]   = "USE DATABASE;";
 uint32_t delayMS;
   
 // Use WiFiClient class to create TCP connections
@@ -28,7 +34,7 @@ MySQL_Connection conn(&client);
 MySQL_Cursor* cursor;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(BAUDRATE);
   dht.begin();
   // We start by connecting to a WiFi network
 
@@ -72,7 +78,7 @@ void loop() {
   float t = dht.readTemperature();
 
 
- // char INSERT_SQL[] = "INSERT INTO temperatur (temp, roomnr) VALUES (99,1)";
+ // char INSERT_SQL[] = "INSERT INTO temperatur (temp, roomnr) VALUES (99.01,11.22,1)";
   String sqlcmd = "INSERT INTO temperatur (temp, humidity, roomnr) VALUES (";
   sqlcmd += String(t,2);
   sqlcmd += ",";
@@ -81,7 +87,7 @@ void loop() {
   Serial.print(sqlcmd);
   Serial.print(F("Temperature: "));
   Serial.print(t);
-  Serial.print(F("°C - Feuchtigkeit: "));
+  Serial.print(F("°C - Humidity: "));
   Serial.print(h);
 
 int str_len = sqlcmd.length() + 1; 
