@@ -5,6 +5,17 @@
     This code is a kind of merge of different sketches.
 */
 
+/* ESP8266 Pinout:
+1: GND
+2: TX / GPIO1
+3: GIPO2
+4: CH_EN / CH_PD
+5: GPIO0
+6: RST
+7: RX / GPIO3
+8: VCC (3.3V)
+*/
+
 #include <ESP8266WiFi.h>
 #include <MySQL_Connection.h>
 #include <MySQL_Cursor.h>
