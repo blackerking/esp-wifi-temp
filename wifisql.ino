@@ -28,32 +28,45 @@ char password[]     = SQLPASS;      // MySQL user login password
 char USE_DB_SQL[]   = "USE DATABASE;";
 uint32_t delayMS;
   
+float h;
+float t;
+String sqlcmd;
+int str_len;  
 // Use WiFiClient class to create TCP connections
 WiFiClient client;
 MySQL_Connection conn(&client);
 MySQL_Cursor* cursor;
 
 void setup() {
-  Serial.begin(BAUDRATE);
+  Serial.begin(9600);
   dht.begin();
   // We start by connecting to a WiFi network
-
+  delay(500); // for serialmonitor
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-
-  /* Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
-     would try to act as both a client and an access-point and could cause
-     network-issues with your other WiFi-devices on your WiFi-network. */
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, wlanpassword);
-
+  int count = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
-  }
-
+    count++;
+      if(count == 20)
+      {
+        h = dht.readHumidity();
+        t = dht.readTemperature();
+        Serial.println("");
+        Serial.println("No WiFi connection established! Try again...");
+        Serial.print(F("Temperature: "));
+        Serial.print(t);
+        Serial.print(F("°C - Humidity: "));
+        Serial.print(h);
+        Serial.println();
+        count =0;
+      }
+    }
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
@@ -73,13 +86,13 @@ void loop() {
 
 
   delay(5000);
-  float h = dht.readHumidity();
+  h = dht.readHumidity();
   // Read temperature as Celsius (the default)
-  float t = dht.readTemperature();
+  t = dht.readTemperature();
 
 
- // char INSERT_SQL[] = "INSERT INTO temperatur (temp, roomnr) VALUES (99.01,11.22,1)";
-  String sqlcmd = "INSERT INTO temperatur (temp, humidity, roomnr) VALUES (";
+ // char INSERT_SQL[] = "INSERT INTO wohnzimmer (temp, roomnr) VALUES (99,1)";
+  sqlcmd = "INSERT INTO wohnzimmer (temp, humidity, roomnr) VALUES (";
   sqlcmd += String(t,2);
   sqlcmd += ",";
   sqlcmd += String(h,2);
@@ -90,8 +103,7 @@ void loop() {
   Serial.print(F("°C - Humidity: "));
   Serial.print(h);
 
-int str_len = sqlcmd.length() + 1; 
- 
+  str_len = sqlcmd.length() + 1; 
 // Prepare the character array (the buffer) 
 char sqlbefehl[str_len];
  
