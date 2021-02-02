@@ -30,6 +30,9 @@ uint32_t delayMS;
   
 float h;
 float t;
+float hold;
+float told;
+
 String sqlcmd;
 int str_len;  
 // Use WiFiClient class to create TCP connections
@@ -90,7 +93,19 @@ void loop() {
   // Read temperature as Celsius (the default)
   t = dht.readTemperature();
 
+  //Check WIFI
+if(WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println("WiFi connection lost, Try reconnnecting...");
+    WiFi.begin(ssid, wlanpassword);
+    return;
+   }
 
+if((h == hold) && (told == t))
+{
+  //Nothing changed
+  return;
+}
  // char INSERT_SQL[] = "INSERT INTO wohnzimmer (temp, roomnr) VALUES (99,1)";
   sqlcmd = "INSERT INTO wohnzimmer (temp, humidity, roomnr) VALUES (";
   sqlcmd += String(t,2);
@@ -113,7 +128,8 @@ sqlcmd.toCharArray(sqlbefehl, str_len);
   if (conn.connected())
     cursor->execute(USE_DB_SQL);
     cursor->execute(sqlbefehl);
-
+  hold = h;
+  told = t;
 
  // delay(300000); // execute once every 5 minutes, don't flood remote service
 }
