@@ -27,7 +27,6 @@ char user[]         = SQLUSER;      // MySQL user login username
 char password[]     = SQLPASS;      // MySQL user login password
 char USE_DB_SQL[]   = "USE DATABASE;";
 uint32_t delayMS;
-  
 float h;
 float t;
 float hold;
@@ -80,6 +79,7 @@ void setup() {
     Serial.println("OK.");
   else
     Serial.println("FAILED.");
+    
   
   // create MySQL cursor object
   cursor = new MySQL_Cursor(&conn);
@@ -97,7 +97,10 @@ void loop() {
 if(WiFi.status() != WL_CONNECTED)
   {
     Serial.println("WiFi connection lost, Try reconnnecting...");
+    WiFi.disconnect();
+    delay(10000);
     WiFi.begin(ssid, wlanpassword);
+    delay(10000);
     return;
    }
 
@@ -105,18 +108,22 @@ if((h == hold) && (told == t))
 {
   //Nothing changed
   return;
+  Serial.println();
+  Serial.print("No changes...");
 }
  // char INSERT_SQL[] = "INSERT INTO wohnzimmer (temp, roomnr) VALUES (99,1)";
   sqlcmd = "INSERT INTO wohnzimmer (temp, humidity, roomnr) VALUES (";
   sqlcmd += String(t,2);
   sqlcmd += ",";
   sqlcmd += String(h,2);
-  sqlcmd += ",1)";
-  Serial.print(sqlcmd);
+  sqlcmd += ",2)";
+  //Serial.print(sqlcmd);
+  Serial.println();
   Serial.print(F("Temperature: "));
   Serial.print(t);
   Serial.print(F("°C - Humidity: "));
   Serial.print(h);
+  
 
   str_len = sqlcmd.length() + 1; 
 // Prepare the character array (the buffer) 
