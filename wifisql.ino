@@ -17,6 +17,7 @@
 #define SQLUSER     "ROOT"
 #define SQLPASS     "SQLPASS"
 #define BAUDRATE    9600
+#define ROOMNR      2
 
 const char* ssid         = STASSID;
 const char* wlanpassword = STAPSK;
@@ -32,8 +33,6 @@ float t;
 float hold;
 float told;
 
-String sqlcmd;
-int str_len;  
 // Use WiFiClient class to create TCP connections
 WiFiClient client;
 MySQL_Connection conn(&client);
@@ -79,7 +78,6 @@ void setup() {
     Serial.println("OK.");
   else
     Serial.println("FAILED.");
-    
   
   // create MySQL cursor object
   cursor = new MySQL_Cursor(&conn);
@@ -93,48 +91,43 @@ void loop() {
   // Read temperature as Celsius (the default)
   t = dht.readTemperature();
 
+  Serial.println();
+  Serial.print(F("Temperature: "));
+  Serial.print(t);
+  Serial.print(F("°C - Humidity: "));
+  Serial.print(h);
+  Serial.println(); 
+
   //Check WIFI
 if(WiFi.status() != WL_CONNECTED)
   {
     Serial.println("WiFi connection lost, Try reconnnecting...");
-    WiFi.disconnect();
-    delay(10000);
     WiFi.begin(ssid, wlanpassword);
-    delay(10000);
     return;
    }
 
 if((h == hold) && (told == t))
 {
   //Nothing changed
+  Serial.println("No new Values...");
   return;
-  Serial.println();
-  Serial.print("No changes...");
 }
- // char INSERT_SQL[] = "INSERT INTO wohnzimmer (temp, roomnr) VALUES (99,1)";
-  sqlcmd = "INSERT INTO wohnzimmer (temp, humidity, roomnr) VALUES (";
-  sqlcmd += String(t,2);
-  sqlcmd += ",";
-  sqlcmd += String(h,2);
-  sqlcmd += ",2)";
-  //Serial.print(sqlcmd);
-  Serial.println();
-  Serial.print(F("Temperature: "));
-  Serial.print(t);
-  Serial.print(F("°C - Humidity: "));
-  Serial.print(h);
-  
+  char sqlcmdc[99] ="INSERT INTO wohnzimmer (temp, humidity, roomnr) VALUES (";
+  char resultt[8];
+  char resulth[8];
+  dtostrf(t,2,2,resultt);
+  dtostrf(h,2,2,resulth);
 
-  str_len = sqlcmd.length() + 1; 
-// Prepare the character array (the buffer) 
-char sqlbefehl[str_len];
- 
-// Copy it over 
-sqlcmd.toCharArray(sqlbefehl, str_len);
+  strcat(sqlcmdc, resultt);
+
+  strcat(sqlcmdc, ",");
+  strcat(sqlcmdc, resulth);
+  strcat(sqlcmdc, ",ROOMNR)\0");
+  Serial.println(sqlcmdc);
 
   if (conn.connected())
     cursor->execute(USE_DB_SQL);
-    cursor->execute(sqlbefehl);
+    cursor->execute(sqlcmdc);
   hold = h;
   told = t;
 
