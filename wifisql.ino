@@ -24,7 +24,7 @@
 #define ROOMNR      "3"
 
 //------------------------------------------------------------//
-#define VERSION     "1.0 - 2021.03.23"
+#define VERSION     "1.1 - 2021.04.02"
 
 void(* resetFunc) (void) = 0;
 const char* ssid     = STASSID;
@@ -44,11 +44,6 @@ float h;
 float t;
 float hold;
 float told;
-
-// Use WiFiClient class to create TCP connections
-WiFiClient client;
-MySQL_Connection conn(&client);
-MySQL_Cursor* cursor;
 
 // Use WiFiClient class to create TCP connections
 WiFiClient client;
@@ -155,7 +150,7 @@ void loop() {
   }
   if(((h != hold) || (told != t))  && (WiFi.status() == WL_CONNECTED))
   {
-    char sqlcmdc[99] ="INSERT INTO tblmessungen (temp, humidity, roomnr) VALUES (";
+    char sqlcmdc[99] ="INSERT INTO tblmeasures (temp, humidity, roomnr) VALUES (";
     dtostrf(t,2,2,resultt);
     dtostrf(h,2,2,resulth);
     strcat(sqlcmdc, resultt);
